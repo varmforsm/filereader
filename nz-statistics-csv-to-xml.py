@@ -1,10 +1,10 @@
 
-import csv
+import csv, zipfile
 
-gus = []
+gus = {}
 ess = []
-ans = []
-ars = []
+ans = {}
+ars = {}
 
 class GeoUnit():
     """ Class for storing geographic unit data """
@@ -45,33 +45,38 @@ class LookupArea():
 
 def decodeGeoUnit(line):
     post = line.split(",")
-    gus.append(GeoUnit(post[0], post[1], post[2], post[3], post[4]))
+    gus[post[0]] = GeoUnit(post[0], post[1], post[2], post[3], post[4])
 
 def decodeEnterpriseSurvey(line):
     ess.append(EnterpriseSurvey(line[0], line[1], line[2], line[3], line[4], line[5], line[6], line[7], line[8], line[9]))
 
 def decodeLookupAnzsic06(line):
-    ans.append(LookupAnzsic06(line[0], line[1], line[2]))
+    ans[line[0]] = LookupAnzsic06(line[0], line[1], line[2]) 
 
 def decodeLookupArea(line):
-    ars.append(LookupArea(line[0], line[1], line[2]))
+    ars[line[0]] = LookupArea(line[0], line[1], line[2]) 
 
 def readCsvFile(fileName, interpreter):
     file = open(fileName)
     with file as csvfile:
         csvreader = csv.reader(csvfile, delimiter=',', quotechar='"')
-    for row in csvreader:
-        interpreter(row)
+        for row in csvreader:
+            interpreter(row)
     file.close()
 
 # Using readline()
-file1 = open('geographic-units-by-industry-and-statistical-area-2000-2023-descending-order-february-2023.csv', 'r')
 
-while line := file1.readline():  
+
+
+
+datafile = zipfile.ZipFile('geographic-units-by-industry-and-statistical-area-2000-2023-descending-order-february-2023.zip', 'r')
+data = datafile.open('geographic-units-by-industry-and-statistical-area-2000-2023-descending-order-february-2023.csv', 'r', 'utf-8')
+while line := data.readline():
+    line = line.decode()
     if line.split(",")[2] == "2021":
         decodeGeoUnit(line)
 
-file1.close()
+datafile.close()
 file2 = open('annual-enterprise-survey-2021-financial-year-provisional-csv.csv')
 
 with file2 as csvfile:
