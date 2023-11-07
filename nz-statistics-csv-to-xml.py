@@ -1,10 +1,14 @@
 
-import csv, zipfile
+import csv, zipfile, sys, getopt
 
 gus = {}
 ess = []
 ans = {}
 ars = {}
+
+class Storage():
+    def __init__(self, code, name, units, value, area):
+        pass
 
 class GeoUnit():
     """ Class for storing geographic unit data """
@@ -64,31 +68,43 @@ def readCsvFile(fileName, interpreter):
             interpreter(row)
     file.close()
 
-# Using readline()
+def readFiles(year):
+    datafile = zipfile.ZipFile('geographic-units-by-industry-and-statistical-area-2000-2023-descending-order-february-2023.zip', 'r')
+    data = datafile.open('geographic-units-by-industry-and-statistical-area-2000-2023-descending-order-february-2023.csv', 'r', 'utf-8')
+    while line := data.readline():
+        line = line.decode()
+        if line.split(",")[2] == year:
+            decodeGeoUnit(line)
 
+    datafile.close()
+    file2 = open('annual-enterprise-survey-2021-financial-year-provisional-csv.csv')
 
+    with file2 as csvfile:
+        csvreader = csv.reader(csvfile, delimiter=',', quotechar='"')
+        for row in csvreader:
+            if row[0][0:4] == "2021":
+                decodeEnterpriseSurvey(row)
 
+    file2.close()
 
-datafile = zipfile.ZipFile('geographic-units-by-industry-and-statistical-area-2000-2023-descending-order-february-2023.zip', 'r')
-data = datafile.open('geographic-units-by-industry-and-statistical-area-2000-2023-descending-order-february-2023.csv', 'r', 'utf-8')
-while line := data.readline():
-    line = line.decode()
-    if line.split(",")[2] == "2021":
-        decodeGeoUnit(line)
+    # Simple generic CSV file-reader
+    readCsvFile('lookup-area.csv', decodeLookupArea)
+    readCsvFile('lookup-anzsic06.csv', decodeLookupAnzsic06)
 
-datafile.close()
-file2 = open('annual-enterprise-survey-2021-financial-year-provisional-csv.csv')
+def main(argv):
+    year = ''
+    opts, args = getopt.getopt(argv,"hy:",["year="])
+    for opt, arg in opts:
+        if opt == '-h':
+            print ('nz-statistics-csv-to-xml.py -y <year>')
+            sys.exit()
+        elif opt in ("-y", "--year"):
+            year = arg
 
-with file2 as csvfile:
-    csvreader = csv.reader(csvfile, delimiter=',', quotechar='"')
-    for row in csvreader:
-        if row[0][0:4] == "2021":
-            decodeEnterpriseSurvey(row)
+    if len(year) == 0:
+        year = "2020"
+    print ('Scanned year ', year)
+    readFiles(year)
 
-file2.close()
-
-# Simple generic CSV file-reader
-readCsvFile('lookup-area.csv', decodeLookupArea)
-readCsvFile('lookup-anzsic06.csv', decodeLookupAnzsic06)
-
-
+if __name__ == "__main__":
+   main(sys.argv[1:])
