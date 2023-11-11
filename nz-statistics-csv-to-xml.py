@@ -1,19 +1,25 @@
 
 import csv, zipfile, sys, getopt
 
-gus = {}
+stu = []
+gus = []
 ess = []
 ans = {}
 ars = {}
 
 class Storage():
-    def __init__(self, code, name, units, value, area):
-        pass
+    """ Class for storing a combination of data from all items. """
+    def __init__(self, code, name, units, value, areainfo):
+        self.code = code
+        self.name = name
+        self.units = units
+        self.value = value
+        self.areainfo = areainfo
 
 class GeoUnit():
-    """ Class for storing geographic unit data """
-    def __init__(self, anzic06, area, year, geo_count, ec_count):
-        self.anzic06 = anzic06
+    """ Class for storing geographic unit data. """
+    def __init__(self, anzsic06, area, year, geo_count, ec_count):
+        self.anzsic06 = anzsic06
         self.area = area
         self.year = year
         self.geo_count = geo_count
@@ -21,7 +27,7 @@ class GeoUnit():
 
 class EnterpriseSurvey():
     """ Class for storing enterprise survey data """
-    def __init__(self, year, aggregation, code, name, units, varCode, varName, varCategory, value,	anzic06):
+    def __init__(self, year, aggregation, code, name, units, varCode, varName, varCategory, value,	anzsic06):
         self.year = year
         self.aggregation = aggregation
         self.code = code
@@ -31,7 +37,7 @@ class EnterpriseSurvey():
         self.varName = varName
         self.varCategory = varCategory
         self.value = value
-        self.anzic06 = anzic06
+        self.anzsic06 = anzsic06
 
 class LookupAnzsic06():
     """ Class for looking up Anzsic06 """
@@ -47,18 +53,34 @@ class LookupArea():
         self.description = description
         self.sortOrder = sortOrder
 
+class AreaInfo():
+    """ Headcount for an area """
+    def __init__(self, area, anzsic06, headcount):
+        self.area = area
+        self.anzsic06 = anzsic06
+        self.headcount = headcount
+
+def createStorage(): 
+    for es in ess:
+        anzsic06 = ans[es.anzsic06].description
+        areainfo = []
+        for gu in gus:
+            if gu.anzsic06 == es.anzsic06:
+                areainfo.append(AreaInfo(ans[gu.anzsic06].description, ars[gu.area], gu.ec_count))
+        stu.append(Storage(es.code, es.name, es.units, es.value, areainfo))        
+
 def decodeGeoUnit(line):
     post = line.split(",")
-    gus[post[0]] = GeoUnit(post[0], post[1], post[2], post[3], post[4])
+    self.gus.append(GeoUnit(post[0], post[1], post[2], post[3], post[4]))
 
 def decodeEnterpriseSurvey(line):
-    ess.append(EnterpriseSurvey(line[0], line[1], line[2], line[3], line[4], line[5], line[6], line[7], line[8], line[9]))
+    self.ess.append(EnterpriseSurvey(line[0], line[1], line[2], line[3], line[4], line[5], line[6], line[7], line[8], line[9]))
 
 def decodeLookupAnzsic06(line):
-    ans[line[0]] = LookupAnzsic06(line[0], line[1], line[2]) 
+    self.ans[line[0]] = LookupAnzsic06(line[0], line[1], line[2]) 
 
 def decodeLookupArea(line):
-    ars[line[0]] = LookupArea(line[0], line[1], line[2]) 
+    self.ars[line[0]] = LookupArea(line[0], line[1], line[2]) 
 
 def readCsvFile(fileName, interpreter):
     file = open(fileName)
@@ -105,6 +127,8 @@ def main(argv):
         year = "2020"
     print ('Scanned year ', year)
     readFiles(year)
+
+    createStorage()
 
 if __name__ == "__main__":
    main(sys.argv[1:])
