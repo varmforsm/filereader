@@ -71,16 +71,16 @@ def createStorage():
 
 def decodeGeoUnit(line):
     post = line.split(",")
-    self.gus.append(GeoUnit(post[0], post[1], post[2], post[3], post[4]))
+    gus.append(GeoUnit(post[0], post[1], post[2], post[3], post[4]))
 
 def decodeEnterpriseSurvey(line):
-    self.ess.append(EnterpriseSurvey(line[0], line[1], line[2], line[3], line[4], line[5], line[6], line[7], line[8], line[9]))
+    ess.append(EnterpriseSurvey(line[0], line[1], line[2], line[3], line[4], line[5], line[6], line[7], line[8], line[9]))
 
 def decodeLookupAnzsic06(line):
-    self.ans[line[0]] = LookupAnzsic06(line[0], line[1], line[2]) 
+    ans[line[0]] = LookupAnzsic06(line[0], line[1], line[2]) 
 
 def decodeLookupArea(line):
-    self.ars[line[0]] = LookupArea(line[0], line[1], line[2]) 
+    ars[line[0]] = LookupArea(line[0], line[1], line[2]) 
 
 def readCsvFile(fileName, interpreter):
     file = open(fileName)
